@@ -540,3 +540,12 @@ Error: Compilation failed.
 [36m2026-06-18T16:15:34.071095 [DEBUG]  [HOT-RELOAD] Server started on http://localhost:3030[0m
 [36m2026-06-18T16:15:34.128072 [DEBUG]  [HOT-RELOAD] Stopping old server...[0m
 [36m2026-06-18T16:15:36.097699 [DEBUG]  [HOT-RELOAD] Starting server...[0m
+[36m2026-06-18T16:15:48.458755 [DEBUG]  [FLINT] ⚠️ Hot reload is ENABLED.[0m
+[36m2026-06-18T16:15:48.466833 [DEBUG]  FLINT_HOT=1[0m
+[36m2026-06-18T16:15:48.488074 [DEBUG]  [FLINT] Server Worker running on http://localhost:3030 (PID: 25588)[0m
+[36m2026-06-18T16:15:48.494123 [DEBUG]  Mail server configured for Flint Dart <noreply@flintdart.eulogia.net>@smtp.gmail.com[0m
+[32m2026-06-18T16:15:48.494123 [INFO]  📧 Mail configured using provider: gmail[0m
+[36m2026-06-18T16:15:48.517425 [DEBUG]  [HOT-RELOAD] Server started on http://localhost:3030[0m
+[36m2026-06-18T16:15:48.733447 [DEBUG]  [DEBUG] Swagger UI directory: C:\Users\Aim\AppData\Local\Pub\Cache\hosted\pub.dev\flint_dart-1.1.12\lib\swagger\swagger-ui[0m
+[36m2026-06-18T16:15:48.854498 [DEBUG]  [DB] MySQL connected to inventoryhq@localhost:3306[0m
+[36m2026-06-18T16:15:48.854498 [DEBUG]  [FLINT] Database auto-connected via .env[0m

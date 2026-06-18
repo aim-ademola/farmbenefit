@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ..
+      dockerfile: ./Dockerfile
+      args:
+        APP_PORT: 3030
+    ports:
+      - "3030:3030"
+    env_file:
+      - .env
+    environment:
+      - FLINT_HOT=0
+      - PORT=3030
+    restart: unless-stopped
