@@ -101,18 +101,18 @@ packages:
     dependency: "direct main"
     description:
       name: flint_dart
-      sha256: "6d7449d76bbe4e54d558f673f067181611d06db8024179c80b781d49004e7535"
+      sha256: d02a11d5bfe459f8ad947735a276f07e2d2fc3f92f1171c253fbb3db20a6f3f7
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.11"
+    version: "1.1.12"
   flint_ui:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flint_ui
-      sha256: "116798a91254b42a9d8832cdf521edca3b22332208bbfef3d549ef00570af1c0"
+      sha256: "9fe9c0e83d279221734d0bece34eb898cd7a8dc4f9f107651fbb02bd760b5d74"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.9"
+    version: "0.1.11"
   intl:
     dependency: transitive
     description:

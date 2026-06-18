@@ -7,7 +7,8 @@
       "name": "backend",
       "version": "0.0.1",
       "dependencies": [
-        "flint_dart"
+        "flint_dart",
+        "flint_ui"
       ],
       "devDependencies": []
     },
@@ -21,8 +22,16 @@
       ]
     },
     {
+      "name": "flint_ui",
+      "version": "0.1.11",
+      "dependencies": [
+        "flint_client",
+        "universal_web"
+      ]
+    },
+    {
       "name": "flint_dart",
-      "version": "1.1.11",
+      "version": "1.1.12",
       "dependencies": [
         "args",
         "bcrypt",
@@ -59,6 +68,22 @@
       "dependencies": []
     },
     {
+      "name": "universal_web",
+      "version": "1.1.1+1",
+      "dependencies": [
+        "web"
+      ]
+    },
+    {
+      "name": "flint_client",
+      "version": "0.0.4",
+      "dependencies": [
+        "clock",
+        "path",
+        "web"
+      ]
+    },
+    {
       "name": "watcher",
       "version": "1.2.1",
       "dependencies": [
@@ -79,23 +104,6 @@
         "collection",
         "meta",
         "web"
-      ]
-    },
-    {
-      "name": "flint_client",
-      "version": "0.0.4",
-      "dependencies": [
-        "clock",
-        "path",
-        "web"
-      ]
-    },
-    {
-      "name": "flint_ui",
-      "version": "0.1.9",
-      "dependencies": [
-        "flint_client",
-        "universal_web"
       ]
     },
     {
@@ -175,17 +183,22 @@
       ]
     },
     {
+      "name": "web",
+      "version": "1.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "clock",
+      "version": "1.1.2",
+      "dependencies": []
+    },
+    {
       "name": "async",
       "version": "2.13.1",
       "dependencies": [
         "collection",
         "meta"
       ]
-    },
-    {
-      "name": "web",
-      "version": "1.1.1",
-      "dependencies": []
     },
     {
       "name": "meta",
@@ -196,18 +209,6 @@
       "name": "collection",
       "version": "1.19.1",
       "dependencies": []
-    },
-    {
-      "name": "clock",
-      "version": "1.1.2",
-      "dependencies": []
-    },
-    {
-      "name": "universal_web",
-      "version": "1.1.1+1",
-      "dependencies": [
-        "web"
-      ]
     },
     {
       "name": "unorm_dart",
