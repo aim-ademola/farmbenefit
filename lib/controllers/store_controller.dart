@@ -28,20 +28,16 @@ class StoreController extends Controller {
 
   Future<Response> create() async {
     final auth = _authContext;
-    Map<String, dynamic> body;
-    try {
-      body = await req.validate({
-        'name': 'required|string',
-        'code': 'required|string',
-        'type': 'required|string',
-      });
-    } on ValidationException catch (e) {
-      return res.status(422).json(ApiResponse.error(
-            code: 'VALIDATION_ERROR',
-            message: 'Validation failed',
-            details: e.errors,
-          ));
-    }
+    final body = Map<String, dynamic>.from(await req.json() as Map);
+
+    body['name'] = body['name']?.toString().trim();
+    body['code'] = body['code']?.toString().trim();
+    body['type'] = body['type']?.toString().trim();
+    body['phone'] = body['phone']?.toString().trim();
+    body['email'] = body['email']?.toString().trim();
+    body['address'] = body['address']?.toString().trim() ?? '';
+    body['status'] = body['status']?.toString().trim();
+
     final validationError = await _validateStoreBody(body, requireCode: true);
     if (validationError != null) return validationError;
 
@@ -55,9 +51,9 @@ class StoreController extends Controller {
     );
     if (existing != null) {
       return res.status(409).json(ApiResponse.error(
-        code: 'CONFLICT',
-        message: 'A store with this code already exists.',
-      ));
+            code: 'CONFLICT',
+            message: 'A store with this code already exists.',
+          ));
     }
 
     await DB.query(
@@ -86,9 +82,9 @@ class StoreController extends Controller {
     );
 
     return res.status(201).json(ApiResponse.success(
-      data: store,
-      message: 'Store created successfully',
-    ));
+          data: store,
+          message: 'Store created successfully',
+        ));
   }
 
   Future<Response> show() async {
@@ -141,9 +137,9 @@ class StoreController extends Controller {
       );
       if (duplicate != null) {
         return res.status(409).json(ApiResponse.error(
-          code: 'CONFLICT',
-          message: 'A store with this code already exists.',
-        ));
+              code: 'CONFLICT',
+              message: 'A store with this code already exists.',
+            ));
       }
     }
 
@@ -213,16 +209,16 @@ class StoreController extends Controller {
     final user = await _findCompanyUser(userId);
     if (user == null) {
       return res.status(404).json(ApiResponse.error(
-        code: 'NOT_FOUND',
-        message: 'User not found.',
-      ));
+            code: 'NOT_FOUND',
+            message: 'User not found.',
+          ));
     }
 
     if (user['role_key'] != 'store_manager') {
       return res.status(422).json(ApiResponse.error(
-        code: 'VALIDATION_ERROR',
-        message: 'Assigned manager must have the Store Manager role.',
-      ));
+            code: 'VALIDATION_ERROR',
+            message: 'Assigned manager must have the Store Manager role.',
+          ));
     }
 
     await DB.query(
@@ -271,16 +267,16 @@ class StoreController extends Controller {
     final user = await _findCompanyUser(userId);
     if (user == null) {
       return res.status(404).json(ApiResponse.error(
-        code: 'NOT_FOUND',
-        message: 'User not found.',
-      ));
+            code: 'NOT_FOUND',
+            message: 'User not found.',
+          ));
     }
 
     if (user['role_scope'] != 'store') {
       return res.status(422).json(ApiResponse.error(
-        code: 'VALIDATION_ERROR',
-        message: 'Only store-scoped users can be assigned to a store.',
-      ));
+            code: 'VALIDATION_ERROR',
+            message: 'Only store-scoped users can be assigned to a store.',
+          ));
     }
 
     await DB.query(
