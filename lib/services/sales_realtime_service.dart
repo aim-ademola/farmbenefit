@@ -4,6 +4,7 @@ class SalesRealtimeService {
   static const namespace = '/api/v1/ws/sales';
   static const changedEvent = 'sales.changed';
   static const inventoryChangedEvent = 'inventory.changed';
+  static const productsChangedEvent = 'products.changed';
 
   static String companyRoom(Object? companyId) => 'company:$companyId';
 
@@ -54,6 +55,28 @@ class SalesRealtimeService {
         'quantity_available': quantityAvailable,
         'quantity_on_hand': quantityOnHand,
         'reason': reason,
+        'at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
+
+  static void productChanged({
+    required String action,
+    required Object? companyId,
+    required Object? productId,
+    Object? variantId,
+  }) {
+    if (companyId == null) return;
+
+    WebSocketManager.instance.emitToPathRoom(
+      namespace,
+      companyRoom(companyId),
+      productsChangedEvent,
+      {
+        'action': action,
+        'company_id': companyId,
+        'product_id': productId,
+        'product_variant_id': variantId,
         'at': DateTime.now().toIso8601String(),
       },
     );

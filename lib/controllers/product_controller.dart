@@ -2,6 +2,7 @@ import 'package:flint_dart/flint_dart.dart';
 import 'package:flint_dart/helper.dart';
 
 import 'package:backend/core/api_response.dart';
+import 'package:backend/services/sales_realtime_service.dart';
 
 class ProductController extends Controller {
   Future<Response> categories() async {
@@ -218,6 +219,7 @@ class ProductController extends Controller {
     );
 
     await _seedInitialInventory(productId, body);
+    _emitProductChanged('created', productId: productId);
 
     return res.status(201).json(ApiResponse.success(
           data: product,
@@ -302,8 +304,11 @@ class ProductController extends Controller {
       );
     }
 
+    final updatedProduct = await _findProduct(productId);
+    _emitProductChanged('updated', productId: productId);
+
     return res.json(ApiResponse.success(
-      data: await _findProduct(productId),
+      data: updatedProduct,
       message: 'Product updated successfully',
     ));
   }
@@ -321,6 +326,7 @@ class ProductController extends Controller {
       ''',
       positionalParams: ['inactive', productId, _authContext['company_id']],
     );
+    _emitProductChanged('deleted', productId: productId);
 
     return res.json(ApiResponse.success(
       message: 'Product deactivated successfully',
@@ -395,6 +401,11 @@ class ProductController extends Controller {
       ''',
       [_authContext['company_id'], body['sku']],
     );
+    _emitProductChanged(
+      'variant_created',
+      productId: productId,
+      variantId: variant?['id'],
+    );
 
     return res.status(201).json(ApiResponse.success(
           data: variant,
@@ -452,8 +463,15 @@ class ProductController extends Controller {
       );
     }
 
+    final updatedVariant = await _findVariant(variantId);
+    _emitProductChanged(
+      'variant_updated',
+      productId: updatedVariant?['product_id'],
+      variantId: variantId,
+    );
+
     return res.json(ApiResponse.success(
-      data: await _findVariant(variantId),
+      data: updatedVariant,
       message: 'Product variant updated successfully',
     ));
   }
@@ -833,6 +851,19 @@ class ProductController extends Controller {
     final rows = await DB.query(sql, positionalParams: params);
     if (rows.isEmpty) return null;
     return Map<String, dynamic>.from(rows.first);
+  }
+
+  void _emitProductChanged(
+    String action, {
+    required Object? productId,
+    Object? variantId,
+  }) {
+    SalesRealtimeService.productChanged(
+      action: action,
+      companyId: _authContext['company_id'],
+      productId: productId,
+      variantId: variantId,
+    );
   }
 
   Future<Response> _conflict(String message) {

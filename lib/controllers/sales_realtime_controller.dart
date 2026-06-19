@@ -26,11 +26,14 @@ class SalesRealtimeController extends Controller {
 
     final roleKey = auth['role_key']?.toString();
     final permissions = auth['permissions'];
-    final canViewSales = roleKey == 'company_admin' ||
-        (permissions is List && permissions.contains('sales.view'));
-    if (!canViewSales) {
+    final permissionList = permissions is List ? permissions : const [];
+    final canUseRealtime = roleKey == 'company_admin' ||
+        permissionList.contains('sales.view') ||
+        permissionList.contains('products.view') ||
+        permissionList.contains('inventory.view');
+    if (!canUseRealtime) {
       client.emit('sales.error', {
-        'message': 'You do not have permission to view sales updates.',
+        'message': 'You do not have permission to view realtime updates.',
       });
       return;
     }
