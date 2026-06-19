@@ -47,7 +47,7 @@ class InventoryController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: rows,
+      data: rows.map(_presentInventoryRow).toList(),
       message: 'Inventory retrieved successfully',
     ));
   }
@@ -59,7 +59,7 @@ class InventoryController extends Controller {
     }
 
     return res.json(ApiResponse.success(
-      data: inventory,
+      data: _presentInventoryRow(inventory),
       message: 'Inventory row retrieved successfully',
     ));
   }
@@ -143,7 +143,7 @@ class InventoryController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: await _findInventory(inventory['id']),
+      data: _presentInventoryRow((await _findInventory(inventory['id']))!),
       message: 'Stock added successfully',
     ));
   }
@@ -153,6 +153,8 @@ class InventoryController extends Controller {
       'product_id': 'required',
       'quantity': 'required',
       'reason': 'required|string',
+      'store_id': '',
+      'product_variant_id': '',
     });
     if (body is Response) return body;
 
@@ -178,7 +180,7 @@ class InventoryController extends Controller {
       return res.status(409).json(ApiResponse.error(
             code: 'INSUFFICIENT_STOCK',
             message: 'Insufficient available stock.',
-            details: {'available': available},
+            details: {'available': _wholeNumber(available)},
           ));
     }
 
@@ -213,7 +215,7 @@ class InventoryController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: await _findInventory(inventory['id']),
+      data: _presentInventoryRow((await _findInventory(inventory['id']))!),
       message: 'Stock removed successfully',
     ));
   }
@@ -223,6 +225,10 @@ class InventoryController extends Controller {
       'product_id': 'required',
       'quantity': 'required',
       'reason': 'required|string',
+      'store_id': '',
+      'product_variant_id': '',
+      'unit_cost': '',
+      'reorder_level': '',
     });
     if (body is Response) return body;
 
@@ -281,7 +287,7 @@ class InventoryController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: await _findInventory(inventory['id']),
+      data: _presentInventoryRow((await _findInventory(inventory['id']))!),
       message: 'Inventory adjusted successfully',
     ));
   }
@@ -675,7 +681,7 @@ class InventoryController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: rows,
+      data: rows.map(_presentTransactionRow).toList(),
       message: 'Inventory transactions retrieved successfully',
     ));
   }
@@ -706,7 +712,7 @@ class InventoryController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: rows,
+      data: rows.map(_presentInventoryRow).toList(),
       message: 'Low-stock inventory retrieved successfully',
     ));
   }
@@ -990,21 +996,21 @@ class InventoryController extends Controller {
   Future<List<Map<String, dynamic>>> _transferItems(Object? transferId) {
     return DB.query(
       '''
-      SELECT
-        stock_transfer_items.*,
-        products.name AS product_name,
-        products.sku AS product_sku,
-        product_variants.variant_name,
-        product_variants.sku AS variant_sku
-      FROM stock_transfer_items
-      INNER JOIN products ON products.id = stock_transfer_items.product_id
-      LEFT JOIN product_variants ON product_variants.id = stock_transfer_items.product_variant_id
-      WHERE stock_transfer_items.stock_transfer_id = ?
-        AND stock_transfer_items.company_id = ?
-      ORDER BY products.name, product_variants.variant_name
-      ''',
+          SELECT
+            stock_transfer_items.*,
+            products.name AS product_name,
+            products.sku AS product_sku,
+            product_variants.variant_name,
+            product_variants.sku AS variant_sku
+          FROM stock_transfer_items
+          INNER JOIN products ON products.id = stock_transfer_items.product_id
+          LEFT JOIN product_variants ON product_variants.id = stock_transfer_items.product_variant_id
+          WHERE stock_transfer_items.stock_transfer_id = ?
+            AND stock_transfer_items.company_id = ?
+          ORDER BY products.name, product_variants.variant_name
+          ''',
       positionalParams: [transferId, _authContext['company_id']],
-    );
+    ).then((rows) => rows.map(_presentTransferItemRow).toList());
   }
 
   Future<Map<String, dynamic>?> _findVariant(Object? id, Object? productId) {
@@ -1028,6 +1034,41 @@ class InventoryController extends Controller {
     final rows = await DB.query(sql, positionalParams: params);
     if (rows.isEmpty) return null;
     return Map<String, dynamic>.from(rows.first);
+  }
+
+  Map<String, dynamic> _presentInventoryRow(Map<String, dynamic> row) {
+    return {
+      ...row,
+      'quantity_on_hand': _wholeNumber(row['quantity_on_hand']),
+      'quantity_reserved': _wholeNumber(row['quantity_reserved']),
+      'quantity_available': _wholeNumber(row['quantity_available']),
+      'reorder_level': _wholeNumber(row['reorder_level']),
+    };
+  }
+
+  Map<String, dynamic> _presentTransactionRow(Map<String, dynamic> row) {
+    return {
+      ...row,
+      'quantity': _wholeNumber(row['quantity']),
+      'quantity_before': _wholeNumber(row['quantity_before']),
+      'quantity_after': _wholeNumber(row['quantity_after']),
+    };
+  }
+
+  Map<String, dynamic> _presentTransferItemRow(Map<String, dynamic> row) {
+    return {
+      ...row,
+      'quantity_requested': _wholeNumber(row['quantity_requested']),
+      'quantity_approved': _wholeNumber(row['quantity_approved']),
+      'quantity_received': _wholeNumber(row['quantity_received']),
+    };
+  }
+
+  Object? _wholeNumber(Object? value) {
+    if (value == null) return null;
+    final parsed = num.tryParse(value.toString());
+    if (parsed == null) return value;
+    return parsed.truncateToDouble() == parsed ? parsed.toInt() : parsed;
   }
 
   double _asDouble(Object? value) {

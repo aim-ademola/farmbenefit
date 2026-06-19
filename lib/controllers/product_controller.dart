@@ -161,7 +161,7 @@ class ProductController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: rows,
+      data: rows.map(_presentProductRow).toList(),
       message: 'Products retrieved successfully',
     ));
   }
@@ -222,7 +222,7 @@ class ProductController extends Controller {
     _emitProductChanged('created', productId: productId);
 
     return res.status(201).json(ApiResponse.success(
-          data: product,
+          data: product == null ? null : _presentProductRow(product),
           message: 'Product created successfully',
         ));
   }
@@ -244,8 +244,8 @@ class ProductController extends Controller {
 
     return res.json(ApiResponse.success(
       data: {
-        ...product,
-        'variants': variants,
+        ..._presentProductRow(product),
+        'variants': variants.map(_presentVariantRow).toList(),
       },
       message: 'Product retrieved successfully',
     ));
@@ -308,7 +308,7 @@ class ProductController extends Controller {
     _emitProductChanged('updated', productId: productId);
 
     return res.json(ApiResponse.success(
-      data: updatedProduct,
+      data: updatedProduct == null ? null : _presentProductRow(updatedProduct),
       message: 'Product updated successfully',
     ));
   }
@@ -408,7 +408,7 @@ class ProductController extends Controller {
     );
 
     return res.status(201).json(ApiResponse.success(
-          data: variant,
+          data: variant == null ? null : _presentVariantRow(variant),
           message: 'Product variant created successfully',
         ));
   }
@@ -471,7 +471,7 @@ class ProductController extends Controller {
     );
 
     return res.json(ApiResponse.success(
-      data: updatedVariant,
+      data: updatedVariant == null ? null : _presentVariantRow(updatedVariant),
       message: 'Product variant updated successfully',
     ));
   }
@@ -491,7 +491,7 @@ class ProductController extends Controller {
     );
     if (product != null) {
       return res.json(ApiResponse.success(
-        data: product,
+        data: _presentProductRow(product),
         message: 'Barcode match retrieved successfully',
       ));
     }
@@ -520,7 +520,7 @@ class ProductController extends Controller {
     }
 
     return res.json(ApiResponse.success(
-      data: variant,
+      data: _presentVariantRow(variant),
       message: 'Barcode match retrieved successfully',
     ));
   }
@@ -851,6 +851,27 @@ class ProductController extends Controller {
     final rows = await DB.query(sql, positionalParams: params);
     if (rows.isEmpty) return null;
     return Map<String, dynamic>.from(rows.first);
+  }
+
+  Map<String, dynamic> _presentProductRow(Map<String, dynamic> row) {
+    return {
+      ...row,
+      'reorder_level': _wholeNumber(row['reorder_level']),
+    };
+  }
+
+  Map<String, dynamic> _presentVariantRow(Map<String, dynamic> row) {
+    return {
+      ...row,
+      'reorder_level': _wholeNumber(row['reorder_level']),
+    };
+  }
+
+  Object? _wholeNumber(Object? value) {
+    if (value == null) return null;
+    final parsed = num.tryParse(value.toString());
+    if (parsed == null) return value;
+    return parsed.truncateToDouble() == parsed ? parsed.toInt() : parsed;
   }
 
   void _emitProductChanged(
