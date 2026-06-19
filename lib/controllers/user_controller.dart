@@ -53,23 +53,19 @@ class UserController extends Controller {
   }
 
   Future<Response> create() async {
-    Map<String, dynamic> body;
-    try {
-      body = await req.validate({
-        'role_id': 'required',
-        'first_name': 'required|string',
-        'last_name': 'required|string',
-        'email': 'required|email',
-        'username': 'required|string',
-        'password': 'required|string',
-      });
-    } on ValidationException catch (e) {
-      return res.status(422).json(ApiResponse.error(
-            code: 'VALIDATION_ERROR',
-            message: 'Validation failed',
-            details: e.errors,
-          ));
-    }
+    final body = Map<String, dynamic>.from(await req.json() as Map);
+    body['role_id'] = body['role_id']?.toString().trim();
+    body['store_id'] = _blankToNull(body['store_id']);
+    body['first_name'] = body['first_name']?.toString().trim();
+    body['last_name'] = body['last_name']?.toString().trim();
+    body['email'] = body['email']?.toString().trim();
+    body['username'] = body['username']?.toString().trim();
+    body['phone'] = _blankToNull(body['phone']);
+    body['password'] = body['password']?.toString();
+    body['status'] = body['status']?.toString().trim();
+
+    final validationError = await _validateCreateBody(body);
+    if (validationError != null) return validationError;
 
     final duplicate = await _first(
       '''
@@ -290,6 +286,48 @@ class UserController extends Controller {
     }
 
     return Future<Response?>.value();
+  }
+
+  Future<Response?> _validateCreateBody(Map<String, dynamic> body) async {
+    for (final field in [
+      'role_id',
+      'first_name',
+      'last_name',
+      'email',
+      'username',
+      'password',
+    ]) {
+      if (body[field] == null || body[field].toString().trim().isEmpty) {
+        return res.status(422).json(ApiResponse.error(
+              code: 'VALIDATION_ERROR',
+              message: '$field is required.',
+            ));
+      }
+    }
+
+    final email = body['email']?.toString() ?? '';
+    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (!emailPattern.hasMatch(email)) {
+      return res.status(422).json(ApiResponse.error(
+            code: 'VALIDATION_ERROR',
+            message: 'email must be a valid email address.',
+          ));
+    }
+
+    final status = body['status']?.toString();
+    if (status != null && !{'active', 'inactive'}.contains(status)) {
+      return res.status(422).json(ApiResponse.error(
+            code: 'VALIDATION_ERROR',
+            message: 'status must be active or inactive.',
+          ));
+    }
+
+    return null;
+  }
+
+  Object? _blankToNull(Object? value) {
+    if (value == null || value.toString().trim().isEmpty) return null;
+    return value.toString().trim();
   }
 
   Future<Map<String, dynamic>?> _findUser(Object? id) {
